@@ -1,4 +1,4 @@
-package com.alibaba.master;
+package com.alibaba.master; 
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.CommandLineRunner;
