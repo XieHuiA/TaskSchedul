@@ -13,7 +13,7 @@ public class MasterStart implements CommandLineRunner{
      
 	@Override
 	public void run(String... paramArrayOfString) throws Exception {
-		// todo
+		// caoqiankun
 		System.out.println("master Start fine .........");
 		
 	}  
