@@ -17,5 +17,5 @@ public class MasterStart implements CommandLineRunner{
 		System.out.println("master Start fine .........");
 		
 	}
-	
+	  
 }
