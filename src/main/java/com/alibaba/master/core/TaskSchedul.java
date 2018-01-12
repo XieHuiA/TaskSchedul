@@ -47,6 +47,8 @@ public class TaskSchedul {
 	}
 	public void scedule(){
 		scheduleService.scheduleWithFixedDelay(()->{
+			//获取集群ip
+			//获取任务列表
 			
 			
 		}, 20, 300, TimeUnit.SECONDS);
