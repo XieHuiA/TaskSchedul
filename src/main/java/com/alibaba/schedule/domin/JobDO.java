@@ -13,7 +13,7 @@ public class JobDO {
     private String guid;
     private String desc;
     private Long groupId;
-    private Status expectStatus;
+    private int expectStatus;
     private String conf;
     private String creator;
 
@@ -82,11 +82,11 @@ public class JobDO {
         this.groupId = groupId;
     }
 
-    public Status getExpectStatus() {
+    public int getExpectStatus() {
         return expectStatus;
     }
 
-    public void setExpectStatus(Status expectStatus) {
+    public void setExpectStatus(int expectStatus) {
         this.expectStatus = expectStatus;
     }
 
