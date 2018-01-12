@@ -16,6 +16,6 @@ public class MasterStart implements CommandLineRunner{
 		// todo
 		System.out.println("master Start fine .........");
 		
-	}
+	}  
 	  
 }
