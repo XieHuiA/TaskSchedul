@@ -10,7 +10,6 @@ import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
 import com.alibaba.schedule.domin.JobDO;
-import com.alibaba.schedule.domin.TaskDo;
 
 
 @Repository

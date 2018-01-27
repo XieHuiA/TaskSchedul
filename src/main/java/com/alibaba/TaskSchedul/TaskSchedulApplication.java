@@ -2,12 +2,10 @@ package com.alibaba.TaskSchedul;
 
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.alibaba.master.MasterStart;
-import com.alibaba.schedule.mapper.TestMapper;
 import com.alibaba.worker.WorkerStart;
 
 @SpringBootApplication
@@ -22,11 +20,9 @@ public class TaskSchedulApplication {
 		if (args[0].equals("worker") && args[1].equals("start")) {
 			SpringApplication.run(WorkerStart.class, args);
 			logger.info("start worker ok !");
-			System.out.println("start worker ok !");
 		} else if (args[0].equals("master") && args[1].equals("start")) {
 			SpringApplication.run(MasterStart.class, args);
 			logger.info("start master ok !");
-			System.out.println("start master ok !");
 		} else {
 			System.out.println("start faild ! please confirm your parameter ");
 			System.exit(1);

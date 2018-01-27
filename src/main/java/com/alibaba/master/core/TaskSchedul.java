@@ -1,18 +1,36 @@
 package com.alibaba.master.core;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.alibaba.schedule.conf.Config;
+import com.alibaba.schedule.conf.Statuss;
+import com.alibaba.schedule.domin.JobDO;
+import com.alibaba.schedule.domin.MachineDO;
+import com.alibaba.schedule.domin.TaskDo;
+import com.alibaba.schedule.exception.InternalErrorException;
+import com.alibaba.schedule.exception.ShrekException;
 import com.alibaba.schedule.service.JobService;
 import com.alibaba.schedule.service.MachineService;
 import com.alibaba.schedule.service.TaskService;
 
 @Component
 public class TaskSchedul {
+	
+
+	private static final Logger LOG = LoggerFactory.getLogger(TaskSchedul.class);
 	/**
 	 * Task Schedul service
 	 */
@@ -25,6 +43,10 @@ public class TaskSchedul {
 	private MachineService machineService;
 	@Autowired
 	private JobService jobService;
+	@Autowired
+	Config conf;
+	
+	private volatile boolean isStop = false;
 	/**
 	 * 1.集群调度准备相关信息查询。
 	 * 2.进行计算，然后根据每台服务器上的任务总数的大小进行对比计算。
@@ -47,13 +69,177 @@ public class TaskSchedul {
 	}
 	public void scedule(){
 		scheduleService.scheduleWithFixedDelay(()->{
-			//获取集群ip
-			//获取任务列表
+			 LOG.info("taskschedul start...");
+			//1.查询所有job
+			 List<JobDO> jobs = jobService.selectAll();
+			 //遍历job
+			 if (jobs == null || jobs.isEmpty()) {
+				 LOG.info("no jobs to schedule");
+				 return ;
+			}
+			 for (JobDO job : jobs) {
+				 LOG.info("job [{}] start schedule",job.getId());//job开始
+				 
+				 checkStatus();
+				 
+				 try {
+					 scheduleJob(job);
+				} catch (Exception e) {
+					LOG.error("schedule job failed", e);//没有安排job
+				}
+				 
+				 LOG.info("job [{}] finish schedule",job.getId());
+			}
+			 LOG.info("schedule done.");//调度完成
 			
-			
-		}, 20, 300, TimeUnit.SECONDS);
+		}, 0, 30, TimeUnit.SECONDS);
 	}
 	
+	 public void scheduleJob(JobDO job) {
+		 
+		 TaskDo task =  taskService.queryByJobid(String.valueOf(job.getId()));
+		 if (job.getExpectStatus() == Statuss.STOPPED) {
+			 stopTasks(task);
+			 LOG.info("job {} is stopped", job.getId());
+	         return;
+	         
+		 }else if(job.getExpectStatus() == Statuss.RUNNING) {
+			if (!checkTaskIsNull(task)) {
+				if (task.getExpectStatus() != Statuss.RUNNING) {
+					startTask(task,job);
+				}
+				
+			}else{
+				//this status is running about create time 
+				createTaskByJobId(job);
+				task =  taskService.queryByJobid(String.valueOf(job.getId()));
+				startTask(task,job);
+			}
+			LOG.info("job {} is running", job.getId());
+		}else if(job.getExpectStatus() == Statuss.RESTARTING){
+			// 1). to stop  2).to start
+			LOG.info("job {} will restart", job.getId());
+			task.setExpectStatus(Statuss.RESTARTING);
+			taskService.update(task);
+		}
+		 LOG.info("job {} schedule success !", job.getId());
+		 
+	 }
+	 
+	private boolean createTaskByJobId(JobDO job) {
+		String ip = chooseIP(job);
+		TaskDo task = new TaskDo();
+        task.setJobId(job.getId());
+        task.setIp(ip);
+        task.setExpectStatus(Statuss.RUNNING);
+        
+        return taskService.addTaskByjobId(task);
+		
+		
+	}
+	
+
+
+	 private String chooseIP(JobDO job) {
+		// TODO Auto-generated method stub
+		 List<MachineDO> macList = machineService.selectAll();
+		 //过滤一下，过滤掉超时  只保留在线的worker
+		 List<MachineDO> timeoutMachines =  machineService.queryByTimeoutValue(conf.MACHINE_TIMEOUT_TIME);
+		
+		macList.removeAll(timeoutMachines);
+		 
+		 
+		 Map<String, List<TaskDo>> taskMap = buildTaskMap(macList);
+		return  chooseMachine(job, macList, taskMap);
+	}
+	private Map<String, List<TaskDo>> buildTaskMap(List<MachineDO> machineDOs) {
+	        Map<String, List<TaskDo>> taskDOMap = new HashMap<>();
+	        for (MachineDO machineDO : machineDOs) {
+	            taskDOMap.put(machineDO.getIp(), taskService.queryByExpectIp(machineDO.getIp()));
+	        }
+	        return taskDOMap;
+	    }
+	 
+	 
+	 public String chooseMachine(JobDO job, List<MachineDO> machineGroup, Map<String, List<TaskDo>> taskMap) {
+
+	        int minTaskSize = 0;
+	        long minJobTaskSize = 0;
+	        String ip = "";
+
+	        for (MachineDO machineDO : machineGroup) {
+	            List<TaskDo> machineTasks = taskMap.get(machineDO.getIp());
+	            if (machineTasks == null) {
+	                machineTasks = new ArrayList<>();
+	            }
+	            int taskSize = machineTasks.size();
+	            long jobTaskSize = machineTasks.stream().filter(taskDO -> taskDO.getJobId() == job.getId()).count();
+
+	            if ((StringUtils.isBlank(ip))
+	                    || (jobTaskSize < minJobTaskSize)
+	                    || (jobTaskSize == minJobTaskSize && taskSize < minTaskSize)) {
+
+	                minTaskSize = taskSize;
+	                minJobTaskSize = jobTaskSize;
+	                ip = machineDO.getIp();
+	            }
+	        }
+	        return ip;
+	    }
+	 
+	 
+	//把Task的期望状态改成running
+    private boolean startTask(JobDO job,TaskDo task) {
+        String ip = chooseIP(job);
+        task.setIp(ip);
+        task.setExpectStatus(Statuss.RUNNING);
+        return taskService.update(task);
+    }
+    
+ //启动task
+    private void startTask(TaskDo task, JobDO job) {
+    	
+    	if (task.getExpectStatus() != Statuss.RUNNING) {
+    		startTask(job,task);
+		}
+    }
+    
+    
+	public boolean checkTaskIsNull(Object obj ){
+		 if (obj == null) {
+			return true;
+		}
+		 return false;
+	 }
+	 
+	//把Task的期望状态改成stopped
+	    private boolean stopTask(TaskDo task) {
+	        task.setExpectStatus(Statuss.STOPPED);
+	        return taskService.update(task);
+	    }
+	    
+	 //停止task
+	    private void stopTasks(TaskDo task) {
+	    	if (checkTaskIsNull(task)) {
+				return ;
+			}
+	    	if (task.getExpectStatus() != Statuss.STOPPED) {
+	    		
+	    		 if(!stopTask(task)) {
+	    			LOG.warn("stop task failed, task: {}", task.getId());//停止任务失败
+                    throw new InternalErrorException(String.format("stop task failed, task: %d", task.getId()));
+	    		}
+			}
+	    }
+	    
+	private void checkStatus() {
+        if (isStop) {//isStop = false;
+            LOG.warn("schedule thread stopping");//调度线程停止
+           throw new ShrekException(conf.ERROR_CODE_INVALID_OPERATION, "schedule thread stopping");//调度线程停止
+        }
+    }
+	
+	//
 	
 	
 }

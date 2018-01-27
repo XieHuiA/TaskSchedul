@@ -3,6 +3,10 @@ package com.alibaba.schedule.domin;
 
 import java.util.Date;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 /**
  * Created by muming on 16/5/24.
  */
@@ -13,7 +17,7 @@ public class MachineDO {
     private Date gmtModified;
     private Long groupId;
     private String ip;
-    private MachineStatus status;
+    private int status;
     private Date lastHeartbeat;
 
     @Override
@@ -37,6 +41,8 @@ public class MachineDO {
         this.id = id;
     }
 
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     public Date getGmtCreate() {
         return gmtCreate;
     }
@@ -45,6 +51,8 @@ public class MachineDO {
         this.gmtCreate = gmtCreate;
     }
 
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     public Date getGmtModified() {
         return gmtModified;
     }
@@ -69,14 +77,16 @@ public class MachineDO {
         this.ip = ip;
     }
 
-    public MachineStatus getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(MachineStatus status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     public Date getLastHeartbeat() {
         return lastHeartbeat;
     }

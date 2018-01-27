@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.schedule.conf.Config;
 import com.alibaba.schedule.domin.JobDO;
 import com.alibaba.schedule.service.JobService;
 
@@ -24,26 +25,31 @@ public class JobController {
 	@Autowired
 	JobService service;
 	//添加job数据
-	@RequestMapping("/job/add")
+	@RequestMapping("/job/asdd")
 	public String add(){
 		JobDO job=new JobDO();
 		job.setConf("{"+"\"key\":"+"\"value\""+"}");
 		job.setCreator("someone");
 		job.setDesc("dfdf");
-		job.setExpectStatus(0);
+		job.setExpectStatus(1);
 		job.setGmtCreate(new Date());
 		job.setGmtModified(new Date());
 		job.setGroupId((long) 2);
-		job.setGuid("numoo3");
+		job.setGuid("nuwdadmo4");
 		service.add(job);
-		return "SUCCESS";
+		return "success";
 	}
 	
-	@RequestMapping("/job/update")
-	public String updateById(){
+	@RequestMapping("/job/changeStatusById")
+	public String updateById(int id,int expectStatus){
 		
+		int update = service.updateById(id, expectStatus);
+		if (update > 0) {
+			return "SUCCESS";
+		}else{
+			return "xx";
+		}
 		
-		return "SUCCESS";
 	}
 	@RequestMapping("/job/delete")
 	public String deleteById(){
@@ -63,5 +69,9 @@ public class JobController {
 		return service.selectAll();
 	}
 	
-	
+		
+		@RequestMapping("/job/queryByGroupid")
+		public List<JobDO> queryByGroupId(Integer groupId){
+			return service.queryByGroupId(groupId);
+		}
 }
