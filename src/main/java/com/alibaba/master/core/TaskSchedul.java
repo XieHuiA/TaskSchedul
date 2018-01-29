@@ -51,7 +51,7 @@ public class TaskSchedul {
 	 * 2.进行计算，然后根据每台服务器上的任务总数的大小进行对比计算。
 	 */
 	
-	public void init (){
+	public void init (){   
 		this.loadingConfService = Executors.newScheduledThreadPool(1);
 		this.scheduleService = Executors.newScheduledThreadPool(1);
 	}
