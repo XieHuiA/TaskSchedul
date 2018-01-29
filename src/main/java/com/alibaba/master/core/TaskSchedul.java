@@ -43,10 +43,9 @@ public class TaskSchedul {
 	private MachineService machineService;
 	@Autowired
 	private JobService jobService;
-	@Autowired
 	Config conf;
 	
-	private volatile boolean isStop = false;
+	//private volatile boolean isStop = false;
 	/**
 	 * 1.集群调度准备相关信息查询。
 	 * 2.进行计算，然后根据每台服务器上的任务总数的大小进行对比计算。
@@ -80,7 +79,7 @@ public class TaskSchedul {
 			 for (JobDO job : jobs) {
 				 LOG.info("job [{}] start schedule",job.getId());//job开始
 				 
-				 checkStatus();
+				 //checkStatus();
 				 
 				 try {
 					 scheduleJob(job);
@@ -92,8 +91,15 @@ public class TaskSchedul {
 			}
 			 LOG.info("schedule done.");//调度完成
 			
-		}, 0, 30, TimeUnit.SECONDS);
+		}, 0, 15, TimeUnit.SECONDS);
 	}
+	
+	public boolean checkTaskIsNull(Object obj ){
+		 if (obj == null) {
+			return true;
+		}
+		 return false;
+	 }
 	
 	 public void scheduleJob(JobDO job) {
 		 
@@ -119,13 +125,28 @@ public class TaskSchedul {
 		}else if(job.getExpectStatus() == Statuss.RESTARTING){
 			// 1). to stop  2).to start
 			LOG.info("job {} will restart", job.getId());
-			task.setExpectStatus(Statuss.RESTARTING);
-			taskService.update(task);
+			
+			if (!checkTaskIsNull(task)) {
+				stopTasks(task);
+				startTask(task, job);
+			}else{
+				createTaskByJobId(job);
+				//通过jobid在去查询task
+				TaskDo taskjobid = taskService.queryByJobid(String.valueOf(job.getId()));
+				if (!checkTaskIsNull(taskjobid)) {
+					stopTasks(taskjobid);
+					startTask(taskjobid, job);
+				}
+				
+			}
+			
+			
+			//task.setExpectStatus(Statuss.RESTARTING);
+			//taskService.update(task);
 		}
 		 LOG.info("job {} schedule success !", job.getId());
 		 
 	 }
-	 
 	private boolean createTaskByJobId(JobDO job) {
 		String ip = chooseIP(job);
 		TaskDo task = new TaskDo();
@@ -139,7 +160,7 @@ public class TaskSchedul {
 	}
 	
 
-
+//taskMap  key=machine_ip  value=task_通过ip查出
 	 private String chooseIP(JobDO job) {
 		// TODO Auto-generated method stub
 		 List<MachineDO> macList = machineService.selectAll();
@@ -166,7 +187,7 @@ public class TaskSchedul {
 	        int minTaskSize = 0;
 	        long minJobTaskSize = 0;
 	        String ip = "";
-
+	      //taskMap  key=machine_ip  value=task_通过ip查出
 	        for (MachineDO machineDO : machineGroup) {
 	            List<TaskDo> machineTasks = taskMap.get(machineDO.getIp());
 	            if (machineTasks == null) {
@@ -205,12 +226,7 @@ public class TaskSchedul {
     }
     
     
-	public boolean checkTaskIsNull(Object obj ){
-		 if (obj == null) {
-			return true;
-		}
-		 return false;
-	 }
+	
 	 
 	//把Task的期望状态改成stopped
 	    private boolean stopTask(TaskDo task) {
@@ -232,12 +248,12 @@ public class TaskSchedul {
 			}
 	    }
 	    
-	private void checkStatus() {
+	/*private void checkStatus() {
         if (isStop) {//isStop = false;
             LOG.warn("schedule thread stopping");//调度线程停止
            throw new ShrekException(conf.ERROR_CODE_INVALID_OPERATION, "schedule thread stopping");//调度线程停止
         }
-    }
+    }*/
 	
 	//
 	
