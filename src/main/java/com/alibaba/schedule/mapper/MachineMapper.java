@@ -18,7 +18,7 @@ import com.alibaba.schedule.domin.MachineDO;
 public interface MachineMapper {
 
 	//查询所有machine
-	@Select("select * from t_machine")
+	@Select("select * from t_machine where status = 1")
 	@Results({
 			@Result(property="gmtCreate" , column="gmt_create"),
 			@Result(property="gmtModified" , column="gmt_create"),
