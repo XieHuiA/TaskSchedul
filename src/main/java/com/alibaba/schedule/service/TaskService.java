@@ -19,21 +19,25 @@ import com.alibaba.schedule.mapper.TaskMapper;
 public class TaskService {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(TaskService.class);
+	
 	@Autowired
 	private TaskMapper taskMapper;
 	
+	@Autowired
 	private MachineMapper machineMapper;
 
-	
+	@Transactional
 	public List<TaskDo> findAll() {
 			return taskMapper.findAll();
 		}
 
-	
+	@Transactional
 	public TaskDo queryByJobid(String jobId){
 		return taskMapper.queryByJobid(jobId);
 		
 	}
+	
+	@Transactional
 	public TaskDo queryTaskid(String taskid){
 		return taskMapper.queryTaskid(taskid);
 	}
@@ -51,6 +55,7 @@ public class TaskService {
 
 
 	//新增Task
+	@Transactional
 	public boolean addTaskByjobId(TaskDo task) {
 		//task.setJobId(id);
        // task.setExpectStatus(Config.RUNNING);
@@ -63,12 +68,13 @@ public class TaskService {
 
 
 	//通过ip去查询Task
+	@Transactional
 	public List<TaskDo> queryByExpectIp(String ip) {
 		
 		return taskMapper.queryByExpectIp(ip);
 	}
 
-
+	@Transactional
 	public boolean updateActualStatue(TaskDo task) {
 		
 		return taskMapper.updateActualStatue(task);

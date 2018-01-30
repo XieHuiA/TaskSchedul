@@ -16,7 +16,7 @@ import com.alibaba.schedule.mapper.JobMapper;
 public class JobService {
 
 	@Autowired
-	JobMapper mapper;
+	private JobMapper mapper;
 	//添加job数据
 
 	@Transactional
@@ -24,10 +24,12 @@ public class JobService {
 		return mapper.add(job);		
 	}
    //查询所有job数据
-
+	@Transactional
 	public List<JobDO> selectAll(){	
 		return mapper.selectAll();
 	}
+	
+	@Transactional
 	public void deleteById(long id){
 		mapper.deleteById(id);
 	}
@@ -37,12 +39,13 @@ public class JobService {
 		
 	}
 	//按id查询job数据
-
+	@Transactional
 	public List<JobDO> queryById(Long id){
 		return mapper.queryById(id);
 	}
 	
 	//通过groupid查出job
+	@Transactional
 	public List<JobDO> queryByGroupId(Integer groupId){
 		return mapper.queryByGroupId(groupId);
 	}

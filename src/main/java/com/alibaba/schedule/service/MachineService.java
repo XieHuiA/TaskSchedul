@@ -1,8 +1,5 @@
 package com.alibaba.schedule.service;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +14,10 @@ public class MachineService {
 	
 	@Autowired
 	MachineMapper machineMapper;
+	
+	
 	//查询所有machine
+	@Transactional
 	public List<MachineDO> selectAll() {
 		
 		return machineMapper.selectAll();
@@ -27,6 +27,7 @@ public class MachineService {
 	 * 根据id查出machine
 	 * @return
 	 */
+	@Transactional
 	public MachineDO findbyId(String id) {
 		return machineMapper.findbyId(id);
 	}
@@ -65,6 +66,7 @@ public class MachineService {
 	 * 根据ip查出machine
 	 * @return
 	 */
+	@Transactional
 	public MachineDO findbyip(String ip) {
 		return machineMapper.findbyip(ip);
 	}
@@ -72,6 +74,7 @@ public class MachineService {
 	/**
 	 * 查出超时的ip
 	 */
+	@Transactional
 	public List<MachineDO> queryByTimeoutValue(int machineTimeoutSec) {
 		return machineMapper.queryByTimeoutValue(machineTimeoutSec);
 	}
