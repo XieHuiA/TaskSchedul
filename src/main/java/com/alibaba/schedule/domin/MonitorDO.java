@@ -1,12 +1,13 @@
 package com.alibaba.schedule.domin;
 
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * task monitor .
  */
-public class MonitorDO {
+public class MonitorDO implements Serializable{
     private String guid;
     private Date gmtCreate;
     private Date gmtModified;

@@ -1,11 +1,12 @@
 package com.alibaba.schedule.domin;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by muming on 16/5/31.
  */
-public class JobDO {
+public class JobDO implements Serializable{
 
     private Long id;
     private Date gmtCreate;

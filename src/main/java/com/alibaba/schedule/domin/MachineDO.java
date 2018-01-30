@@ -1,6 +1,7 @@
 package com.alibaba.schedule.domin;
 
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -10,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 /**
  * Created by muming on 16/5/24.
  */
-public class MachineDO {
+public class MachineDO implements Serializable{
 
     private Long id;
     private Date gmtCreate;

@@ -4,7 +4,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.el.util.ConcurrentCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,7 @@ public class Worker {
 	JobService jobService;
 	@Autowired
 	Config conf ;
-	public static Map<Long,WorkerCore> map = new HashMap<>();
+	public static Map<Long,WorkerCore> map = new ConcurrentHashMap<>();
 	
 	@Autowired
 	public MachineService machineService;
@@ -85,7 +87,7 @@ public class Worker {
 	private void start(TaskDo task) {
 		// 调用worker的start方法
 		map.put(task.getId(), new WorkerCore());
-		map.get(task.getId()).start("task--" + task.getId());
+		map.get(task.getId()).start("Task-" + task.getId());
 
 	}
 
