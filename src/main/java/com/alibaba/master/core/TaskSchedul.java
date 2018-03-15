@@ -84,12 +84,12 @@ public class TaskSchedul {
 				try {
 					scheduleJob(job);
 				} catch (Exception e) {
-					LOG.error("schedule job failed", e);// 没有安排job
+					LOG.error("schedule job failed", e);
 				}
 
 				LOG.info("job [{}] finish schedule", job.getId());
 			}
-			LOG.info("schedule done.");// 调度完成
+			LOG.info("schedule done.");
 
 		}, 0, 15, TimeUnit.SECONDS);
 	}
@@ -195,7 +195,6 @@ public class TaskSchedul {
 
 			if ((StringUtils.isBlank(ip)) || (jobTaskSize < minJobTaskSize)
 					|| (jobTaskSize == minJobTaskSize && taskSize < minTaskSize)) {
-
 				minTaskSize = taskSize;
 				minJobTaskSize = jobTaskSize;
 				ip = machineDO.getIp();
@@ -209,6 +208,8 @@ public class TaskSchedul {
 		String ip = chooseIP(job);
 		task.setIp(ip);
 		task.setExpectStatus(Statuss.RUNNING);
+		job.setExpectStatus(1);
+		jobService.updateById(Integer.valueOf(job.getId().toString()), Statuss.RUNNING);
 		return taskService.update(task);
 	}
 

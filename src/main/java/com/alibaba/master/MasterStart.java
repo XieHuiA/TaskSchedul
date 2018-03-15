@@ -22,9 +22,7 @@ public class MasterStart implements CommandLineRunner{
 	public TaskSchedul taskSchedul;
 	@Override
 	public void run(String... paramArrayOfString) throws Exception {
-		// caoqiankun
-		LOG.info("master run");
-		taskSchedul.init();
+		taskSchedul.init(); 
 		taskSchedul.scedule();
 	}  
 	  
